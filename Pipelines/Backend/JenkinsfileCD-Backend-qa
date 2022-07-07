@@ -1,0 +1,26 @@
+pipeline {
+
+    environment {
+        dockerimagename = "davidsanchez21/endabank-qa"
+        dockerImage = ""
+    }
+
+    agent any
+
+    stages {
+        stage('Deployment') {
+            steps{
+                sshagent(['sshk8s']) {
+                    sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker pull davidsanchez21/endabank-qa:latest' "
+                    sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker container stop \$(docker container ls -aq)' "
+                    sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker container rm \$(docker container ls -aq)' "
+                    sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker run --env-file ./.env -d -p 8081:8080 davidsanchez21/endabank-qa:latest' "       
+                }        
+            }
+        }    
+    }
+
+}
+
+
+

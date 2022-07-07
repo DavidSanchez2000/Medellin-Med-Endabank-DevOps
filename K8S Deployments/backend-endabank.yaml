@@ -1,0 +1,29 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: devops-ramp-up-namespace
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-backend-endabank
+  labels:
+    app: backend-endabank
+spec:
+  selector:
+    matchLabels:
+      app: backend-endabank
+  template:
+    metadata:
+      labels:
+        app: backend-endabank
+    spec:
+      containers:
+      - image: davidsanchez21/endabank:backend_jar_test3
+        name: backend-endabank
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: endabank-secret
+  replicas: 2

@@ -1,0 +1,56 @@
+pipeline {
+
+    environment {
+        dockerimagename = "davidsanchez21/endabank-qa"
+        dockerImage = ""
+    }
+
+    agent any
+
+    stages {
+        stage('Checkout Source') {
+            steps {
+                git url: 'https://github.com/alejosuaza1022/endabank-backend.git', branch: 'test'
+            }
+        }
+
+        stage('Build image') {
+            steps{
+                    sh '''
+                        #!/bin/bash
+                        chmod +x mvnw
+                    '''
+                script {
+                    dockerImage = docker.build dockerimagename
+                }
+                echo "The current Build number is ${BUILD_NUMBER}"
+            }
+        }
+        stage('Sonar Tests') {
+            steps{
+                withCredentials([string(credentialsId: 'sonar_token', variable: 'SECRET')]) {
+                    sh'docker run --rm -v "$(pwd)":/opt/maven -w /opt/maven maven:3.8.5-openjdk-17 mvn clean install jacoco:prepare-agent test jacoco:report verify sonar:sonar -Dsonar.host.url=http://34.136.34.58:9000/ -Dsonar.login=${SECRET} -Dsonar.projectKey=sonarqa -Dsonar.coverage.jacoco.xmlReportPaths=/target/site/jacoco/jacoco.xml -Dsonar.java.binaries=. -D sonar.java.source=17'
+                }
+            }
+        }
+        stage('Pushing Image') {
+            environment {
+                    registry = 'davidsanchez21/endabank-qa'
+                    registryCredential = 'dockerhublogin'
+                }
+            steps{
+                script {
+                    docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) {
+                        dockerImage.push("latest")
+                        dockerImage.push("$BUILD_NUMBER")
+                    }
+                }
+            }
+        }
+    
+    }
+
+}
+
+
+

@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service-endabank
+spec:
+  selector:
+    app: backend-endabank
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080

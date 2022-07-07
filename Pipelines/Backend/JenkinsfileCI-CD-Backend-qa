@@ -1,0 +1,60 @@
+pipeline {
+
+  environment {
+    dockerimagename = "davidsanchez21/endabank-qa"
+    dockerImage = ""
+  }
+
+  agent any
+
+  stages {
+
+    stage('Checkout Source') {
+      steps {
+        git url: 'https://github.com/alejosuaza1022/endabank-backend.git', branch: 'test'
+      }
+    }
+
+    stage('Build image') {
+      steps{
+            sh '''
+                #!/bin/bash
+                chmod +x mvnw
+            '''
+        script {
+          dockerImage = docker.build dockerimagename
+        }
+        echo "The current Build number is ${BUILD_NUMBER}"
+      }
+    }
+
+    stage('Pushing Image') {
+      environment {
+               registry = 'davidsanchez21/endabank-qa'
+               registryCredential = 'dockerhublogin'
+           }
+      steps{
+        script {
+          docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) {
+            dockerImage.push("latest")
+            dockerImage.push("$BUILD_NUMBER")
+          }
+        }
+      }
+    }
+    stage('Deployment') {
+      steps{
+          sshagent(['sshk8s']) {
+            sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker pull davidsanchez21/endabank-qa:latest' "
+            sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker container stop \$(docker container ls -aq)' "
+            sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker container rm \$(docker container ls -aq)' "
+            sh "ssh -o StrictHostKeyChecking=no -l  davidalejandro_sanchezarias 10.0.3.4 'docker run --env-file ./.env -d -p 8081:8080 davidsanchez21/endabank-qa:latest' "       
+          }        
+      }
+    }    
+  }
+
+}
+
+
+
