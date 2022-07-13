@@ -24,5 +24,5 @@ To reserve and create a static IP we only select create IP address in the IP add
 
 In the next image we can se an example of create a new static IP address
 
-![Frontend Configuration](https://github.com/DavidSanchez2000/Medellin-Med-Endabank-DevOps/blob/master/IaC%20(Terraform)/Frontend_reserve_static_IP_address)
+![Frontend Configuration](https://github.com/DavidSanchez2000/Medellin-Med-Endabank-DevOps/blob/master/IaC%20(Terraform)/Frontend_reserve_static_IP_address.PNG)
 
